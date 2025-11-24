@@ -11,19 +11,21 @@ import {
 
 /*
  * startStudySession widget
- * Minimal study session UI skeleton. Data (words/translations) will be injected later.
- * Props define language, difficulty, and desired deck length.
+ * Interactive flashcard study session with complete deck data.
+ * The LLM should generate a flashcard deck with a specific theme, language, length, and difficulty.
+ * Props include the study language, difficulty level, and an array of flashcards.
  */
+
+type Flashcard = {
+  word: string;
+  translation: string;
+};
 
 type WidgetProps = {
   studyLanguage: Language;
-  deckLength: number;
   difficulty: Difficulty;
+  deck: Flashcard[];
 };
-
-// Placeholder card content until real data is injected.
-// We generate an array of undefined slots equal to deckLength for indexing/navigation only.
-const buildDeck = (length: number) => Array.from({ length }, () => null);
 
 const StartStudySession = () => {
   const toolOutput = useToolOutput() as WidgetProps;
@@ -32,12 +34,9 @@ const StartStudySession = () => {
 
   // Provide safe defaults in case props are not yet populated or missing.
   const studyLanguage: Language = toolOutput?.studyLanguage ?? "french";
-  const deckLength: number = toolOutput?.deckLength ?? 10;
   const difficulty: Difficulty = toolOutput?.difficulty ?? "beginner";
+  const deck: Flashcard[] = toolOutput?.deck ?? [];
 
-  // Build a placeholder deck; real card data (word/translation) expected to be prefilled later via future integration.
-  const effectiveLength = Number.isFinite(deckLength) && deckLength > 0 ? deckLength : 0;
-  const deck = buildDeck(effectiveLength);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -65,14 +64,14 @@ const StartStudySession = () => {
           >
             {difficulty ? difficulty.charAt(0).toUpperCase() + difficulty.slice(1) : "Unknown"}
           </span>
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${tokens.subtext} border border-current`}>{effectiveLength} cards</span>
+          <span className={`px-3 py-1 rounded-full text-xs font-medium ${tokens.subtext} border border-current`}>{deck.length} cards</span>
         </div>
       </div>
 
       {/* Empty state if no cards */}
       {deck.length === 0 && (
         <div className={`mb-6 rounded-lg border-2 ${tokens.surface} p-6 text-center`}>
-          <p className={`text-sm ${tokens.subtext}`}>No cards to study. Provide a positive deckLength and available data.</p>
+          <p className={`text-sm ${tokens.subtext}`}>No cards to study. Please provide a deck with flashcards.</p>
         </div>
       )}
 
@@ -87,7 +86,9 @@ const StartStudySession = () => {
           <div className="absolute inset-0" style={{ backfaceVisibility: "hidden" }}>
             <div className={`w-full h-full rounded-2xl shadow-xl border-2 ${tokens.surface} flex flex-col items-center justify-center p-8`}>
               <p className={`text-xs ${tokens.subtext} mb-3 uppercase tracking-wider font-medium`}>Word</p>
-              <h2 className={`text-4xl font-bold ${tokens.text} mb-4`}>Card {currentIndex + 1}</h2>
+              <h2 className={`text-4xl font-bold ${tokens.text} mb-4`}>
+                {deck[currentIndex]?.word || `Card ${currentIndex + 1}`}
+              </h2>
               <p className={`text-sm ${tokens.subtext}`}>Tap to reveal translation</p>
             </div>
           </div>
@@ -100,7 +101,9 @@ const StartStudySession = () => {
               }}
             >
               <p className="text-xs text-white/80 mb-3 uppercase tracking-wider font-medium">Translation</p>
-              <h2 className="text-4xl font-bold text-white mb-4">(Prefilled later)</h2>
+              <h2 className="text-4xl font-bold text-white mb-4">
+                {deck[currentIndex]?.translation || "(No translation)"}
+              </h2>
               <p className="text-sm text-white/70">Tap to flip back</p>
             </div>
           </div>

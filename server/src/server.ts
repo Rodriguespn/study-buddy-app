@@ -66,38 +66,40 @@ server.widget(
 server.widget(
   "startStudySession",
   {
-    description: "Start a language flashcard study session",
+    description: "Start a language flashcard study session with a generated deck",
   },
   {
     description:
-      "Use this tool to start a study session with flashcards. This should be called after the user has configured their deck preferences or when they want to begin studying. If studyLanguage, deckLength, or difficulty are not provided, call createFlashcardDeck first to help the user configure their deck.",
+      "Use this tool to start a study session with flashcards. The LLM should generate a flashcard deck with a specific theme, language, length, and difficulty level. Provide an array of flashcards, where each flashcard contains a word in the target language and its translation.",
     inputSchema: {
       studyLanguage: z
         .enum(["spanish", "french", "german", "italian", "portuguese"])
         .describe("Language for the study session. Options: spanish, french, german, italian, portuguese"),
-      deckLength: z
-        .number()
-        .int()
-        .min(1)
-        .max(200)
-        .describe("Number of flashcards in the study session. Common options: 5, 10, 15, 20, 25, 30, 40, 50. Range: 1-200"),
       difficulty: z
         .enum(["beginner", "intermediate", "advanced"])
         .describe("Difficulty level of the flashcards. Options: beginner, intermediate, advanced"),
+      deck: z
+        .array(
+          z.object({
+            word: z.string().describe("The word or phrase in the target language"),
+            translation: z.string().describe("The translation of the word in English"),
+          })
+        )
+        .describe("Array of flashcards with words and their translations. Generate flashcards based on the theme, language, length, and difficulty requested by the user."),
     },
   },
-  async ({ studyLanguage, deckLength, difficulty }): Promise<CallToolResult> => {
+  async ({ studyLanguage, difficulty, deck }): Promise<CallToolResult> => {
     try {
       return {
         structuredContent: {
           studyLanguage,
-          deckLength,
           difficulty,
+          deck,
         },
         content: [
           {
             type: "text",
-            text: `Study session started with ${deckLength} ${studyLanguage} flashcards at ${difficulty} level. Widget shown with interactive flashcards for studying.`,
+            text: `Study session started with ${deck.length} ${studyLanguage} flashcards at ${difficulty} level. Widget shown with interactive flashcards for studying.`,
           },
         ],
         isError: false,
