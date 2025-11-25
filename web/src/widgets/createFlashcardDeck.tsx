@@ -43,7 +43,7 @@ const CreateFlashcardDeck: React.FC = () => {
   const { callTool, isPending } = useCallTool<
     { studyLanguage: Language; deckLength: number; difficulty: Difficulty },
     CallToolResponse
-  >("startStudySession");
+  >("createFlashcardDeck");
 
   const handleGenerateDeck = () => {
     callTool({

@@ -18,7 +18,7 @@ server.widget(
   },
   {
     description:
-      "Use this tool to help the user configure and create a new flashcard deck. The user can specify the language they want to study, the difficulty level, and how many cards they want in their deck.",
+      "Use this tool to help the user configure a new flashcard deck. The user can specify the language they want to study, the difficulty level, and how many cards they want. After the user confirms their selections, generate a flashcard deck with appropriate vocabulary for the chosen language and difficulty level, then call the startStudySession tool with the generated deck.",
     inputSchema: {
       studyLanguage: z
         .enum(["spanish", "french", "german", "italian", "portuguese"])
@@ -39,16 +39,20 @@ server.widget(
   },
   async ({ studyLanguage, deckLength, difficulty }): Promise<CallToolResult> => {
     try {
+      const finalLanguage = studyLanguage ?? "spanish";
+      const finalLength = deckLength ?? 10;
+      const finalDifficulty = difficulty ?? "beginner";
+
       return {
         structuredContent: {
-          studyLanguage: studyLanguage ?? "spanish",
-          deckLength: deckLength ?? 10,
-          difficulty: difficulty ?? "beginner",
+          studyLanguage: finalLanguage,
+          deckLength: finalLength,
+          difficulty: finalDifficulty,
         },
         content: [
           {
             type: "text",
-            text: `Widget shown to configure flashcard deck settings. User can select language, difficulty level, and number of cards.`,
+            text: `Deck configuration received: ${finalLength} ${finalLanguage} flashcards at ${finalDifficulty} level. Now generate a flashcard deck with appropriate vocabulary and call startStudySession with the generated deck.`,
           },
         ],
         isError: false,
