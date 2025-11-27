@@ -1,5 +1,5 @@
 {
-  "name": "@apps-sdk-template/server",
+  "name": "@study-buddy/server",
   "version": "0.0.1",
   "private": true,
   "main": "dist/index.js",

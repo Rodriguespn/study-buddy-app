@@ -7,7 +7,7 @@ This is a flashcard ChatGPT app designed to help you study for your exams. It pr
 
 ![App Usage GIF](./assets/demo.gif)
 
-Try the app live: [apps-sdk-template-aedacb7d.alpic.live/](https://apps-sdk-template-aedacb7d.alpic.live/)
+Try the app live: [study-buddy-aedacb7d.alpic.live/](https://study-buddy-aedacb7d.alpic.live/)
 
 ## Tools
 
