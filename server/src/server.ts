@@ -1,6 +1,12 @@
 import { type CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { McpServer } from "skybridge/server";
+import {
+  LanguageSchema,
+  DifficultySchema,
+  LANGUAGES,
+  DIFFICULTIES,
+} from "@study-buddy/shared";
 
 const server = new McpServer(
   {
@@ -20,10 +26,9 @@ server.widget(
     description:
       "Use this tool to help the user configure a new flashcard deck. The user can specify the language they want to study, the difficulty level, and how many cards they want. After the user confirms their selections, generate a flashcard deck with appropriate vocabulary for the chosen language and difficulty level, then call the startStudySession tool with the generated deck.",
     inputSchema: {
-      studyLanguage: z
-        .enum(["spanish", "french", "german", "italian", "portuguese"])
-        .optional()
-        .describe("Language for the flashcard deck. Options: spanish, french, german, italian, portuguese"),
+      studyLanguage: LanguageSchema.optional().describe(
+        `Language for the flashcard deck. Options: ${LANGUAGES.join(", ")}`
+      ),
       deckLength: z
         .number()
         .int()
@@ -31,10 +36,9 @@ server.widget(
         .max(200)
         .optional()
         .describe("Number of flashcards to include in the deck. Common options: 5, 10, 15, 20, 25, 30, 40, 50. Range: 1-200"),
-      difficulty: z
-        .enum(["beginner", "intermediate", "advanced"])
-        .optional()
-        .describe("Difficulty level of the flashcards. Options: beginner, intermediate, advanced"),
+      difficulty: DifficultySchema.optional().describe(
+        `Difficulty level of the flashcards. Options: ${DIFFICULTIES.join(", ")}`
+      ),
     },
   },
   async ({ studyLanguage, deckLength, difficulty }): Promise<CallToolResult> => {
@@ -76,12 +80,12 @@ server.widget(
     description:
       "Use this tool to start a study session with flashcards. The LLM should generate a flashcard deck with a specific theme, language, length, and difficulty level. Provide an array of flashcards, where each flashcard contains a word in the target language and its translation.",
     inputSchema: {
-      studyLanguage: z
-        .enum(["spanish", "french", "german", "italian", "portuguese"])
-        .describe("Language for the study session. Options: spanish, french, german, italian, portuguese"),
-      difficulty: z
-        .enum(["beginner", "intermediate", "advanced"])
-        .describe("Difficulty level of the flashcards. Options: beginner, intermediate, advanced"),
+      studyLanguage: LanguageSchema.describe(
+        `Language for the study session. Options: ${LANGUAGES.join(", ")}`
+      ),
+      difficulty: DifficultySchema.describe(
+        `Difficulty level of the flashcards. Options: ${DIFFICULTIES.join(", ")}`
+      ),
       deck: z
         .array(
           z.object({

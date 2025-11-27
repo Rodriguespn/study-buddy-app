@@ -1,13 +1,11 @@
 /**
- * Shared constants and utilities for flashcard widgets
+ * UI-specific constants and utilities for flashcard widgets
  * Used by: startStudySession, createFlashcardDeck
+ *
+ * Core types (Language, Difficulty, Flashcard) are imported from @study-buddy/shared
  */
 
-export type Language = "spanish" | "french" | "german" | "italian" | "portuguese";
-export type Difficulty = "beginner" | "intermediate" | "advanced";
-
-export const LANGUAGES: Language[] = ["spanish", "french", "german", "italian", "portuguese"];
-export const DIFFICULTIES: Difficulty[] = ["beginner", "intermediate", "advanced"];
+import { type Language, type Difficulty } from "@study-buddy/shared";
 
 export const languageNames: Record<Language, string> = {
   spanish: "Spanish",

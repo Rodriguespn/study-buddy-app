@@ -1,16 +1,13 @@
 import { useState } from "react";
 import { mountWidget, useToolOutput, useCallTool, type CallToolResponse } from "skybridge/web";
 import "@/index.css";
+import { type Language, type Difficulty, LANGUAGES, DIFFICULTIES } from "@study-buddy/shared";
 import {
-  LANGUAGES,
-  DIFFICULTIES,
   DECK_LENGTH_OPTIONS,
   languageNames,
   difficultyLabels,
   difficultyColorStyles,
   getThemeTokens,
-  type Language,
-  type Difficulty,
 } from "./shared/shared-flashcard";
 
 /*

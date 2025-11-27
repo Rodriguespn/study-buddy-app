@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { mountWidget, useToolOutput } from "skybridge/web";
 import "@/index.css";
+import { type Language, type Difficulty, type Flashcard } from "@study-buddy/shared";
 import {
   languageNames,
   difficultyColorStyles,
   getThemeTokens,
-  type Language,
-  type Difficulty,
 } from "./shared/shared-flashcard";
 
 /*
@@ -15,11 +14,6 @@ import {
  * The LLM should generate a flashcard deck with a specific theme, language, length, and difficulty.
  * Props include the study language, difficulty level, and an array of flashcards.
  */
-
-type Flashcard = {
-  word: string;
-  translation: string;
-};
 
 type WidgetProps = {
   studyLanguage: Language;
