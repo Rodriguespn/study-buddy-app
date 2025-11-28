@@ -6,6 +6,7 @@ import {
   languageNames,
   difficultyLabels,
   difficultyColorStyles,
+  categoryLabels,
   getThemeTokens,
 } from "./shared/shared-flashcard";
 
@@ -89,6 +90,10 @@ const ListDecks = () => {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`text-sm ${tokens.subtext}`}>
                       {languageNames[deck.language]}
+                    </span>
+                    <span className={`text-sm ${tokens.subtext}`}>•</span>
+                    <span className={`text-sm ${tokens.subtext}`}>
+                      {categoryLabels[deck.category]}
                     </span>
                     <span className={`text-sm ${tokens.subtext}`}>•</span>
                     <span className={`text-sm ${tokens.subtext}`}>{deck.cards.length} cards</span>

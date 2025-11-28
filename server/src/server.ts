@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { McpServer } from "skybridge/server";
-import { LanguageSchema, DifficultySchema, LANGUAGES, DIFFICULTIES } from "@study-buddy/shared";
+import {
+  LanguageSchema,
+  DifficultySchema,
+  CategorySchema,
+  LANGUAGES,
+  DIFFICULTIES,
+  CATEGORIES,
+} from "@study-buddy/shared";
 import {
   handleListDecks,
   handleSearchDeck,
@@ -33,16 +40,19 @@ server.widget(
   handleListDecks
 );
 
-// Tool for searching decks by language and difficulty - ALWAYS use this first when starting a study session
+// Tool for searching decks by language, difficulty, and category - ALWAYS use this first when starting a study session
 server.tool(
   "searchDeck",
-  "IMPORTANT: Always call this tool FIRST when the user wants to study. Search for existing decks matching the requested language and/or difficulty. If matching decks are found, use startStudySessionFromDeck with the best match. Only if NO decks are found, then generate new flashcards and call saveDeck to create a new deck.",
+  "IMPORTANT: Always call this tool FIRST when the user wants to study. Search for existing decks matching the requested language, difficulty, and/or category. If matching decks are found, use startStudySessionFromDeck with the best match. Only if NO decks are found, then generate new flashcards and call saveDeck to create a new deck.",
   {
     language: LanguageSchema.optional().describe(
       `Filter by language. Options: ${LANGUAGES.join(", ")}`
     ),
     difficulty: DifficultySchema.optional().describe(
       `Filter by difficulty level. Options: ${DIFFICULTIES.join(", ")}`
+    ),
+    category: CategorySchema.optional().describe(
+      `Filter by category. Options: ${CATEGORIES.join(", ")}`
     ),
   },
   handleSearchDeck
@@ -56,6 +66,9 @@ server.tool(
     name: z.string().describe("Name for the deck (e.g., 'French Beginner - Food & Drinks')"),
     language: LanguageSchema.describe(`Language of the deck. Options: ${LANGUAGES.join(", ")}`),
     difficulty: DifficultySchema.describe(`Difficulty level. Options: ${DIFFICULTIES.join(", ")}`),
+    category: CategorySchema.optional().describe(
+      `Category of the deck. Options: ${CATEGORIES.join(", ")}. Defaults to 'other' if not provided.`
+    ),
     cards: z
       .array(
         z.object({

@@ -8,11 +8,13 @@ import { z } from "zod";
 import {
   type Language,
   type Difficulty,
+  type Category,
   type Flashcard,
   type Deck,
   type CreateDeckInput,
   LANGUAGES,
   DIFFICULTIES,
+  CATEGORIES,
 } from "./types.js";
 
 /**
@@ -26,6 +28,11 @@ export const LanguageSchema: z.ZodType<Language> = z.enum(LANGUAGES as [Language
 export const DifficultySchema: z.ZodType<Difficulty> = z.enum(
   DIFFICULTIES as [Difficulty, ...Difficulty[]]
 );
+
+/**
+ * Schema for categories
+ */
+export const CategorySchema: z.ZodType<Category> = z.enum(CATEGORIES as [Category, ...Category[]]);
 
 /**
  * Schema for a single flashcard
@@ -49,6 +56,7 @@ export const DeckSchema: z.ZodType<Deck> = z.object({
   name: z.string(),
   language: LanguageSchema,
   difficulty: DifficultySchema,
+  category: CategorySchema,
   cards: FlashcardDeckSchema,
   created_at: z.string(),
   updated_at: z.string(),
@@ -62,5 +70,6 @@ export const CreateDeckInputSchema: z.ZodType<CreateDeckInput> = z.object({
   name: z.string(),
   language: LanguageSchema,
   difficulty: DifficultySchema,
+  category: CategorySchema,
   cards: FlashcardDeckSchema,
 });

@@ -1,9 +1,10 @@
-import type { Deck, CreateDeckInput, Language, Difficulty } from "@study-buddy/shared";
+import type { Deck, CreateDeckInput, Language, Difficulty, Category } from "@study-buddy/shared";
 import { supabase } from "../supabase.js";
 
 export type SearchDecksFilters = {
   language?: Language;
   difficulty?: Difficulty;
+  category?: Category;
 };
 
 /**
@@ -57,6 +58,7 @@ export async function createDeck(input: CreateDeckInput): Promise<Deck> {
       name: input.name,
       language: input.language,
       difficulty: input.difficulty,
+      category: input.category,
       cards: input.cards,
     })
     .select()
@@ -94,6 +96,10 @@ export async function searchDecks(userId: string, filters: SearchDecksFilters): 
 
   if (filters.difficulty) {
     query = query.eq("difficulty", filters.difficulty);
+  }
+
+  if (filters.category) {
+    query = query.eq("category", filters.category);
   }
 
   const { data, error } = await query.order("created_at", { ascending: false });

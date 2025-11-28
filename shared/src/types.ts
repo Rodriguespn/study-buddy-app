@@ -5,6 +5,17 @@
 
 export type Language = "spanish" | "french" | "german" | "italian" | "portuguese";
 export type Difficulty = "beginner" | "intermediate" | "advanced";
+export type Category =
+  | "food"
+  | "travel"
+  | "business"
+  | "greetings"
+  | "numbers"
+  | "colors"
+  | "animals"
+  | "family"
+  | "weather"
+  | "other";
 
 export interface Flashcard {
   word: string;
@@ -17,6 +28,7 @@ export interface Deck {
   name: string;
   language: Language;
   difficulty: Difficulty;
+  category: Category;
   cards: Flashcard[];
   created_at: string;
   updated_at: string;
@@ -26,3 +38,15 @@ export type CreateDeckInput = Omit<Deck, "id" | "created_at" | "updated_at">;
 
 export const LANGUAGES: Language[] = ["spanish", "french", "german", "italian", "portuguese"];
 export const DIFFICULTIES: Difficulty[] = ["beginner", "intermediate", "advanced"];
+export const CATEGORIES: Category[] = [
+  "food",
+  "travel",
+  "business",
+  "greetings",
+  "numbers",
+  "colors",
+  "animals",
+  "family",
+  "weather",
+  "other",
+];

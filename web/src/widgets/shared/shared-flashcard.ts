@@ -5,7 +5,7 @@
  * Core types (Language, Difficulty, Flashcard) are imported from @study-buddy/shared
  */
 
-import type { Language, Difficulty } from "@study-buddy/shared";
+import type { Language, Difficulty, Category } from "@study-buddy/shared";
 
 export const languageNames: Record<Language, string> = {
   spanish: "Spanish",
@@ -25,6 +25,19 @@ export const difficultyLabels: Record<Difficulty, string> = {
   beginner: "Beginner",
   intermediate: "Intermediate",
   advanced: "Advanced",
+};
+
+export const categoryLabels: Record<Category, string> = {
+  food: "Food & Drinks",
+  travel: "Travel",
+  business: "Business",
+  greetings: "Greetings",
+  numbers: "Numbers",
+  colors: "Colors",
+  animals: "Animals",
+  family: "Family",
+  weather: "Weather",
+  other: "Other",
 };
 
 /**

@@ -1,5 +1,5 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import type { Language, Difficulty, Flashcard } from "@study-buddy/shared";
+import type { Language, Difficulty, Category, Flashcard } from "@study-buddy/shared";
 import { getDecksForUser, getDeckById, createDeck, searchDecks } from "./db/decks.js";
 
 // Temporary hardcoded user ID until OAuth is implemented
@@ -12,12 +12,14 @@ export type ListDecksInput = {
 export type SearchDeckInput = {
   language?: Language;
   difficulty?: Difficulty;
+  category?: Category;
 };
 
 export type SaveDeckInput = {
   name: string;
   language: Language;
   difficulty: Difficulty;
+  category?: Category;
   cards: Flashcard[];
 };
 
@@ -63,9 +65,10 @@ export async function handleListDecks({ userId }: ListDecksInput): Promise<CallT
 export async function handleSearchDeck({
   language,
   difficulty,
+  category,
 }: SearchDeckInput): Promise<CallToolResult> {
   try {
-    const decks = await searchDecks(TEMP_USER_ID, { language, difficulty });
+    const decks = await searchDecks(TEMP_USER_ID, { language, difficulty, category });
 
     if (decks.length === 0) {
       return {
@@ -73,11 +76,12 @@ export async function handleSearchDeck({
           decks: [],
           language,
           difficulty,
+          category,
         },
         content: [
           {
             type: "text",
-            text: `No decks found matching the criteria (language: ${language ?? "any"}, difficulty: ${difficulty ?? "any"}). Create a new deck using saveDeck with the desired language, difficulty, and generated flashcards.`,
+            text: `No decks found matching the criteria (language: ${language ?? "any"}, difficulty: ${difficulty ?? "any"}, category: ${category ?? "any"}). Create a new deck using saveDeck with the desired language, difficulty, category, and generated flashcards.`,
           },
         ],
         isError: false,
@@ -89,11 +93,12 @@ export async function handleSearchDeck({
         decks,
         language,
         difficulty,
+        category,
       },
       content: [
         {
           type: "text",
-          text: `Found ${decks.length} deck(s) matching the criteria (language: ${language ?? "any"}, difficulty: ${difficulty ?? "any"}). Choose the most appropriate deck based on the user's request, or create a new one if none are suitable.`,
+          text: `Found ${decks.length} deck(s) matching the criteria (language: ${language ?? "any"}, difficulty: ${difficulty ?? "any"}, category: ${category ?? "any"}). Choose the most appropriate deck based on the user's request, or create a new one if none are suitable.`,
         },
       ],
       isError: false,
@@ -110,6 +115,7 @@ export async function handleSaveDeck({
   name,
   language,
   difficulty,
+  category,
   cards,
 }: SaveDeckInput): Promise<CallToolResult> {
   try {
@@ -118,6 +124,7 @@ export async function handleSaveDeck({
       name,
       language,
       difficulty,
+      category: category ?? "other",
       cards,
     });
 
