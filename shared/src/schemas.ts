@@ -6,15 +6,15 @@
 
 import { z } from "zod";
 import {
-  type Language,
-  type Difficulty,
-  type Category,
-  type Flashcard,
-  type Deck,
-  type CreateDeckInput,
-  LANGUAGES,
-  DIFFICULTIES,
   CATEGORIES,
+  type Category,
+  type CreateDeckInput,
+  type Deck,
+  DIFFICULTIES,
+  type Difficulty,
+  type Flashcard,
+  LANGUAGES,
+  type Language,
 } from "./types.js";
 
 /**

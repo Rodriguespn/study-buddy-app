@@ -1,5 +1,6 @@
-import type { Deck, CreateDeckInput, Language, Difficulty, Category } from "@study-buddy/shared";
-import { supabase } from "../supabase.js";
+import type { Category, CreateDeckInput, Deck, Difficulty, Language } from "@study-buddy/shared";
+
+import { getAuthenticatedSupabaseClient } from "../supabase.js";
 
 export type SearchDecksFilters = {
   language?: Language;
@@ -8,11 +9,12 @@ export type SearchDecksFilters = {
 };
 
 /**
- * Get all decks for a user
- * Note: RLS will be enforced once OAuth is implemented.
- * For now, we filter by user_id directly.
+ * Get all decks for a user.
+ * Uses authenticated Supabase client with RLS enforcement.
+ * The userId parameter is kept for explicit filtering but RLS provides the security layer.
  */
 export async function getDecksForUser(userId: string): Promise<Deck[]> {
+  const supabase = getAuthenticatedSupabaseClient();
   const { data, error } = await supabase
     .from("decks")
     .select("*")
@@ -27,9 +29,11 @@ export async function getDecksForUser(userId: string): Promise<Deck[]> {
 }
 
 /**
- * Get a single deck by ID
+ * Get a single deck by ID.
+ * Uses authenticated Supabase client with RLS enforcement.
  */
 export async function getDeckById(deckId: string, userId: string): Promise<Deck | null> {
+  const supabase = getAuthenticatedSupabaseClient();
   const { data, error } = await supabase
     .from("decks")
     .select("*")
@@ -48,9 +52,11 @@ export async function getDeckById(deckId: string, userId: string): Promise<Deck 
 }
 
 /**
- * Create a new deck
+ * Create a new deck.
+ * Uses authenticated Supabase client with RLS enforcement.
  */
 export async function createDeck(input: CreateDeckInput): Promise<Deck> {
+  const supabase = getAuthenticatedSupabaseClient();
   const { data, error } = await supabase
     .from("decks")
     .insert({
@@ -72,9 +78,11 @@ export async function createDeck(input: CreateDeckInput): Promise<Deck> {
 }
 
 /**
- * Delete a deck
+ * Delete a deck.
+ * Uses authenticated Supabase client with RLS enforcement.
  */
 export async function deleteDeck(deckId: string, userId: string): Promise<boolean> {
+  const supabase = getAuthenticatedSupabaseClient();
   const { error } = await supabase.from("decks").delete().eq("id", deckId).eq("user_id", userId);
 
   if (error) {
@@ -85,9 +93,11 @@ export async function deleteDeck(deckId: string, userId: string): Promise<boolea
 }
 
 /**
- * Search decks by language and/or difficulty
+ * Search decks by language and/or difficulty.
+ * Uses authenticated Supabase client with RLS enforcement.
  */
 export async function searchDecks(userId: string, filters: SearchDecksFilters): Promise<Deck[]> {
+  const supabase = getAuthenticatedSupabaseClient();
   let query = supabase.from("decks").select("*").eq("user_id", userId);
 
   if (filters.language) {

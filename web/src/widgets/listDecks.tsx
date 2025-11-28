@@ -3,11 +3,11 @@ import "@/index.css";
 import type { Deck } from "@study-buddy/shared";
 import { useSendFollowUpMessage } from "../hooks/useSendFollowUpMessage";
 import {
-  languageNames,
-  difficultyLabels,
-  difficultyColorStyles,
   categoryLabels,
+  difficultyColorStyles,
+  difficultyLabels,
   getThemeTokens,
+  languageNames,
 } from "./shared/shared-flashcard";
 
 /*

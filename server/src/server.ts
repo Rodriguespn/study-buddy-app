@@ -1,17 +1,17 @@
-import { z } from "zod";
-import { McpServer } from "skybridge/server";
 import {
-  LanguageSchema,
-  DifficultySchema,
-  CategorySchema,
-  LANGUAGES,
-  DIFFICULTIES,
   CATEGORIES,
+  CategorySchema,
+  DIFFICULTIES,
+  DifficultySchema,
+  LANGUAGES,
+  LanguageSchema,
 } from "@study-buddy/shared";
+import { McpServer } from "skybridge/server";
+import { z } from "zod";
 import {
   handleListDecks,
-  handleSearchDeck,
   handleSaveDeck,
+  handleSearchDeck,
   handleStartStudySessionFromDeck,
   handleStartStudySessionFromScratch,
 } from "./handlers.js";
@@ -33,9 +33,7 @@ server.widget(
   {
     description:
       "Use this tool to display all the user's saved decks. When the user selects a deck, call startStudySessionFromDeck with that deck's ID. When the user clicks 'Create New Deck', generate flashcards based on user preferences and call saveDeck to save the deck.",
-    inputSchema: {
-      userId: z.string().optional().describe("User ID (optional, uses default if not provided)"),
-    },
+    inputSchema: {},
   },
   handleListDecks
 );

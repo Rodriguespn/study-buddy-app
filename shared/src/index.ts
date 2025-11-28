@@ -3,10 +3,6 @@
  * Shared types and schemas for the flashcard application
  */
 
-// Types
-export type { Category, CreateDeckInput, Deck, Difficulty, Flashcard, Language } from "./types.js";
-export { CATEGORIES, DIFFICULTIES, LANGUAGES } from "./types.js";
-
 // Zod schemas
 export {
   CategorySchema,
@@ -17,3 +13,6 @@ export {
   FlashcardSchema,
   LanguageSchema,
 } from "./schemas.js";
+// Types
+export type { Category, CreateDeckInput, Deck, Difficulty, Flashcard, Language } from "./types.js";
+export { CATEGORIES, DIFFICULTIES, LANGUAGES } from "./types.js";

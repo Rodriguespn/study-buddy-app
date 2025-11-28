@@ -1,13 +1,10 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import type { Language, Difficulty, Category, Flashcard } from "@study-buddy/shared";
-import { getDecksForUser, getDeckById, createDeck, searchDecks } from "./db/decks.js";
+import type { Category, Difficulty, Flashcard, Language } from "@study-buddy/shared";
 
-// Temporary hardcoded user ID until OAuth is implemented
-const TEMP_USER_ID = "temp-user-123";
+import { getAuthContext } from "./auth.js";
+import { createDeck, getDeckById, getDecksForUser, searchDecks } from "./db/decks.js";
 
-export type ListDecksInput = {
-  userId?: string;
-};
+export type ListDecksInput = Record<string, never>;
 
 export type SearchDeckInput = {
   language?: Language;
@@ -33,14 +30,14 @@ export type StartStudySessionFromScratchInput = {
   deck: Flashcard[];
 };
 
-export async function handleListDecks({ userId }: ListDecksInput): Promise<CallToolResult> {
+export async function handleListDecks(_input: ListDecksInput): Promise<CallToolResult> {
   try {
-    const effectiveUserId = userId ?? TEMP_USER_ID;
-    const decks = await getDecksForUser(effectiveUserId);
+    const { userId } = getAuthContext();
+    const decks = await getDecksForUser(userId);
 
     return {
       structuredContent: {
-        userId: effectiveUserId,
+        userId,
         decks,
       },
       content: [
@@ -68,7 +65,8 @@ export async function handleSearchDeck({
   category,
 }: SearchDeckInput): Promise<CallToolResult> {
   try {
-    const decks = await searchDecks(TEMP_USER_ID, { language, difficulty, category });
+    const { userId } = getAuthContext();
+    const decks = await searchDecks(userId, { language, difficulty, category });
 
     if (decks.length === 0) {
       return {
@@ -119,8 +117,9 @@ export async function handleSaveDeck({
   cards,
 }: SaveDeckInput): Promise<CallToolResult> {
   try {
+    const { userId } = getAuthContext();
     const deck = await createDeck({
-      user_id: TEMP_USER_ID,
+      user_id: userId,
       name,
       language,
       difficulty,
@@ -152,7 +151,8 @@ export async function handleStartStudySessionFromDeck({
   deckId,
 }: StartStudySessionFromDeckInput): Promise<CallToolResult> {
   try {
-    const savedDeck = await getDeckById(deckId, TEMP_USER_ID);
+    const { userId } = getAuthContext();
+    const savedDeck = await getDeckById(deckId, userId);
     if (!savedDeck) {
       return {
         content: [{ type: "text", text: `Deck not found: ${deckId}` }],

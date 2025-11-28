@@ -1,11 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  handleStartStudySessionFromDeck,
-  handleStartStudySessionFromScratch,
-  handleListDecks,
-  handleSearchDeck,
-  handleSaveDeck,
-} from "../handlers.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Mock environment variables before importing modules that use them
+vi.stubEnv("SUPABASE_URL", "https://test-project.supabase.co");
+vi.stubEnv("SUPABASE_ANON_KEY", "test-anon-key");
+vi.stubEnv("MCP_SERVER_URL", "https://test-mcp-server.com");
+
+// Mock the auth module
+vi.mock("../auth.js", () => ({
+  getAuthContext: vi.fn(() => ({
+    userId: "test-user-123",
+    clientId: null,
+    email: "test@example.com",
+    accessToken: "test-token",
+  })),
+}));
 
 // Mock the database module
 vi.mock("../db/decks.js", () => ({
@@ -15,7 +23,14 @@ vi.mock("../db/decks.js", () => ({
   searchDecks: vi.fn(),
 }));
 
-import { getDecksForUser, getDeckById, createDeck, searchDecks } from "../db/decks.js";
+import { createDeck, getDeckById, getDecksForUser, searchDecks } from "../db/decks.js";
+import {
+  handleListDecks,
+  handleSaveDeck,
+  handleSearchDeck,
+  handleStartStudySessionFromDeck,
+  handleStartStudySessionFromScratch,
+} from "../handlers.js";
 
 const mockGetDecksForUser = vi.mocked(getDecksForUser);
 const mockGetDeckById = vi.mocked(getDeckById);
@@ -41,7 +56,7 @@ describe("listDecks handler", () => {
     const mockDecks = [
       {
         id: "deck-1",
-        user_id: "temp-user-123",
+        user_id: "test-user-123",
         name: "French Basics",
         language: "french" as const,
         difficulty: "beginner" as const,
@@ -76,7 +91,7 @@ describe("searchDeck handler", () => {
     const mockDecks = [
       {
         id: "deck-1",
-        user_id: "temp-user-123",
+        user_id: "test-user-123",
         name: "French Basics",
         language: "french" as const,
         difficulty: "beginner" as const,
@@ -99,7 +114,7 @@ describe("searchDeck handler", () => {
     const mockDecks = [
       {
         id: "deck-1",
-        user_id: "temp-user-123",
+        user_id: "test-user-123",
         name: "French Food",
         language: "french" as const,
         difficulty: "beginner" as const,
@@ -123,7 +138,7 @@ describe("saveDeck handler", () => {
   it("saves deck and returns the created deck", async () => {
     const mockDeck = {
       id: "new-deck-id",
-      user_id: "temp-user-123",
+      user_id: "test-user-123",
       name: "French Food",
       language: "french" as const,
       difficulty: "beginner" as const,
@@ -153,7 +168,7 @@ describe("saveDeck handler", () => {
   it("defaults category to 'other' when not provided", async () => {
     const mockDeck = {
       id: "new-deck-id",
-      user_id: "temp-user-123",
+      user_id: "test-user-123",
       name: "French Basics",
       language: "french" as const,
       difficulty: "beginner" as const,
@@ -180,7 +195,7 @@ describe("startStudySessionFromDeck handler", () => {
   it("loads deck from database when deckId is provided", async () => {
     const mockDeck = {
       id: "deck-123",
-      user_id: "temp-user-123",
+      user_id: "test-user-123",
       name: "German Basics",
       language: "german" as const,
       difficulty: "intermediate" as const,

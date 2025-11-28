@@ -90,8 +90,22 @@ Runtime validation schemas that mirror TypeScript types for type-safe data parsi
 ### Database Layer
 - Supabase PostgreSQL backend
 - CRUD operations in `db/decks.ts`
-- User isolation via `user_id` filtering
-- Lazy client initialization with Proxy pattern
+- User isolation via `user_id` filtering + Row Level Security (RLS)
+- Authenticated Supabase client passes user's JWT for RLS enforcement
+
+### Authentication (`auth.ts`)
+- **OAuth 2.1 with Supabase Auth** as identity provider
+- **JWT validation** via JWKS endpoint with caching (`jose` library)
+- **AsyncLocalStorage** for request-scoped auth context
+- **Google OAuth** for user authentication
+- **Dynamic Client Registration (DCR)** for MCP clients
+
+### OAuth Endpoints
+| Endpoint | Purpose |
+|----------|---------|
+| `/.well-known/oauth-protected-resource` | RFC 9728 Protected Resource Metadata |
+| `/oauth/consent` | Authorization consent UI |
+| `/oauth/config.json` | Public Supabase config for consent UI |
 
 ## Web Package (`@study-buddy/web`)
 
@@ -121,8 +135,23 @@ Widgets are top-level components mounted by the Skybridge framework:
 
 ### MCP Protocol Implementation
 ```
-ChatGPT → /mcp endpoint → Express middleware → McpServer
-→ Handlers → Supabase DB → Structured response → Frontend widgets
+MCP Client (ChatGPT)
+       ↓
+/.well-known/oauth-protected-resource → Discovers Supabase Auth
+       ↓
+Supabase OAuth 2.1 (DCR + Google login)
+       ↓
+/oauth/consent → User approves access
+       ↓
+Bearer token in Authorization header
+       ↓
+/mcp endpoint → JWT validation via JWKS
+       ↓
+AsyncLocalStorage auth context
+       ↓
+Handlers → Authenticated Supabase client (RLS)
+       ↓
+Structured response → Frontend widgets
 ```
 
 ### Code Style
@@ -172,9 +201,10 @@ pnpm tsc --noEmit
 ```
 
 ### Environment Variables
-Server requires Supabase credentials (optional for development):
-- `SUPABASE_URL`: Supabase project URL
+Server requires the following environment variables:
+- `SUPABASE_URL`: Supabase project URL (e.g., `https://xxx.supabase.co`)
 - `SUPABASE_ANON_KEY`: Supabase anonymous key
+- `MCP_SERVER_URL`: Public URL of MCP server for OAuth audience validation (e.g., `https://study-buddy-aedacb7d.alpic.live`)
 
 ## Technology Stack
 
@@ -190,7 +220,8 @@ Server requires Supabase credentials (optional for development):
 - **Express 5.1.0**: HTTP server
 - **TypeScript 5.7.2**: Type safety
 - **MCP SDK**: Model Context Protocol
-- **Supabase**: PostgreSQL database
+- **Supabase**: PostgreSQL database + OAuth 2.1 Auth
+- **jose**: JWT/JWKS validation
 - **Zod**: Schema validation
 - **T3 Env**: Typed environment variables
 
@@ -214,9 +245,9 @@ Server requires Supabase credentials (optional for development):
 
 1. **Build Order**: Always build `shared` package before `server` or `web`
 2. **Type Safety**: Use Zod schemas for runtime validation at MCP boundaries
-3. **User Isolation**: All database queries filter by `user_id`
+3. **User Isolation**: All database queries filter by `user_id` + RLS policies enforce at DB level
 4. **Theme Support**: Use `getThemeTokens()` for consistent theming
-5. **Temporary User**: Development uses `TEMP_USER_ID = "temp-user-123"` (OAuth pending)
+5. **Auth Context**: Use `getAuthContext()` from `auth.ts` to access authenticated user in handlers
 
 ## Recent Changes & Decisions
 
@@ -228,12 +259,35 @@ Server requires Supabase credentials (optional for development):
 - Established monorepo structure with shared types
 - Configured Supabase integration for persistent storage
 - Added CI pipeline with testing and formatting checks
+- **Implemented OAuth 2.1 authentication** with Supabase Auth as identity provider
+- **Added JWT validation** via JWKS with caching
+- **Created consent UI** at `/oauth/consent` for user authorization
+- **Enabled RLS policies** for database-level user isolation
 
 ### Architecture Decisions
 - **Skybridge Framework**: Alpic.ai's framework that abstracts MCP complexity for widget development
 - **Zod-First Validation**: Runtime type safety across server boundaries
 - **Widget Pattern**: Self-contained components over traditional SPA routing
-- **Lazy Database Client**: Proxy pattern for optional Supabase initialization
+- **AsyncLocalStorage for Auth**: Request-scoped auth context without polluting Express types
+- **Supabase as OAuth Provider**: Leverages Supabase Auth's OAuth 2.1 server capabilities with DCR for MCP clients
+
+## Testing OAuth Flow
+
+### Local Development with ngrok
+1. Start the server: `pnpm --filter @study-buddy/server dev`
+2. Create ngrok tunnel: `ngrok http 3000`
+3. Update `MCP_SERVER_URL` in `.env` to ngrok URL
+4. Test endpoints:
+   - `GET /.well-known/oauth-protected-resource` - Should return authorization server info
+   - `GET /oauth/config.json` - Should return Supabase config
+   - `GET /oauth/consent` - Should show consent UI (needs `authorization_id` param)
+   - `POST /mcp` without token - Should return 401 with `WWW-Authenticate` header
+
+### Supabase Dashboard Configuration Required
+1. **Authentication > OAuth Server**: Enable OAuth 2.1, set Authorization Path to `/oauth/consent`
+2. **Authentication > OAuth Server**: Enable Dynamic Client Registration
+3. **Authentication > Providers**: Ensure Google OAuth is enabled
+4. **SQL Editor**: Run RLS policies (see implementation plan)
 
 ## Resources & References
 
@@ -244,4 +298,5 @@ Server requires Supabase credentials (optional for development):
 - **ChatGPT Apps SDK**: https://platform.openai.com/docs/actions/introduction
 - **MCP Protocol**: https://modelcontextprotocol.io/
 - **Supabase Docs**: https://supabase.com/docs
+- **Supabase OAuth 2.1 Server**: https://supabase.com/docs/guides/auth/oauth-server
 - **Skybridge**: https://github.com/alpic-ai/skybridge
