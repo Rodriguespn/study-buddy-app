@@ -6,7 +6,12 @@ import {
   LANGUAGES,
   DIFFICULTIES,
 } from "@study-buddy/shared";
-import { handleCreateFlashcardDeck, handleStartStudySession } from "./handlers.js";
+import {
+  handleSelectDeck,
+  handleCreateFlashcardDeck,
+  handleSaveDeck,
+  handleStartStudySession,
+} from "./handlers.js";
 
 const server = new McpServer(
   {
@@ -14,6 +19,22 @@ const server = new McpServer(
     version: "0.0.1",
   },
   { capabilities: {} },
+);
+
+// Widget for selecting an existing deck or creating a new one
+server.widget(
+  "selectDeck",
+  {
+    description: "Display user's flashcard decks with option to create new ones",
+  },
+  {
+    description:
+      "Use this tool when the user wants to study flashcards. It displays all their saved decks and a button to create a new deck. When the user selects a deck, call startStudySession with that deck's ID. When the user clicks 'Create New Deck', call createFlashcardDeck.",
+    inputSchema: {
+      userId: z.string().optional().describe("User ID (optional, uses default if not provided)"),
+    },
+  },
+  handleSelectDeck,
 );
 
 // Widget for creating a new flashcard deck
@@ -24,7 +45,7 @@ server.widget(
   },
   {
     description:
-      "Use this tool to help the user configure a new flashcard deck. The user can specify the language they want to study, the difficulty level, and how many cards they want. After the user confirms their selections, generate a flashcard deck with appropriate vocabulary for the chosen language and difficulty level, then call the startStudySession tool with the generated deck.",
+      "Use this tool to help the user configure a new flashcard deck. The user can specify the language they want to study, the difficulty level, and how many cards they want. After the user confirms their selections, generate a flashcard deck with appropriate vocabulary, then call saveDeck to persist it, and finally call startStudySession with the saved deck ID.",
     inputSchema: {
       studyLanguage: LanguageSchema.optional().describe(
         `Language for the flashcard deck. Options: ${LANGUAGES.join(", ")}`
@@ -44,21 +65,42 @@ server.widget(
   handleCreateFlashcardDeck,
 );
 
+// Tool for saving a deck to the database
+server.tool(
+  "saveDeck",
+  "Use this tool to save a flashcard deck to the database",
+  {
+    name: z.string().describe("Name for the deck (e.g., 'French Beginner - Food & Drinks')"),
+    language: LanguageSchema.describe(`Language of the deck. Options: ${LANGUAGES.join(", ")}`),
+    difficulty: DifficultySchema.describe(`Difficulty level. Options: ${DIFFICULTIES.join(", ")}`),
+    cards: z
+      .array(
+        z.object({
+          word: z.string().describe("The word or phrase in the target language"),
+          translation: z.string().describe("The translation in English"),
+        })
+      )
+      .describe("Array of flashcards to save"),
+  },
+  handleSaveDeck,
+);
+
 // Widget for starting a study session
 server.widget(
   "startStudySession",
   {
-    description: "Start a language flashcard study session with a generated deck",
+    description: "Start a language flashcard study session",
   },
   {
     description:
-      "Use this tool to start a study session with flashcards. The LLM should generate a flashcard deck with a specific theme, language, length, and difficulty level. Provide an array of flashcards, where each flashcard contains a word in the target language and its translation.",
+      "Use this tool to start a study session. You can either provide a deckId to load a saved deck from the database, or provide the deck data directly (legacy mode).",
     inputSchema: {
-      studyLanguage: LanguageSchema.describe(
-        `Language for the study session. Options: ${LANGUAGES.join(", ")}`
+      deckId: z.string().uuid().optional().describe("ID of a saved deck to load from the database"),
+      studyLanguage: LanguageSchema.optional().describe(
+        `Language for the study session (required if not using deckId). Options: ${LANGUAGES.join(", ")}`
       ),
-      difficulty: DifficultySchema.describe(
-        `Difficulty level of the flashcards. Options: ${DIFFICULTIES.join(", ")}`
+      difficulty: DifficultySchema.optional().describe(
+        `Difficulty level (required if not using deckId). Options: ${DIFFICULTIES.join(", ")}`
       ),
       deck: z
         .array(
@@ -67,7 +109,8 @@ server.widget(
             translation: z.string().describe("The translation of the word in English"),
           })
         )
-        .describe("Array of flashcards with words and their translations. Generate flashcards based on the theme, language, length, and difficulty requested by the user."),
+        .optional()
+        .describe("Array of flashcards (required if not using deckId)"),
     },
   },
   handleStartStudySession,

@@ -4,8 +4,15 @@
  */
 
 // Types
-export type { Language, Difficulty, Flashcard } from "./types.js";
+export type { Language, Difficulty, Flashcard, Deck, CreateDeckInput } from "./types.js";
 export { LANGUAGES, DIFFICULTIES } from "./types.js";
 
 // Zod schemas
-export { LanguageSchema, DifficultySchema, FlashcardSchema, FlashcardDeckSchema } from "./schemas.js";
+export {
+  LanguageSchema,
+  DifficultySchema,
+  FlashcardSchema,
+  FlashcardDeckSchema,
+  DeckSchema,
+  CreateDeckInputSchema,
+} from "./schemas.js";

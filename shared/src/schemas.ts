@@ -5,7 +5,15 @@
  */
 
 import { z } from "zod";
-import { type Language, type Difficulty, type Flashcard, LANGUAGES, DIFFICULTIES } from "./types.js";
+import {
+  type Language,
+  type Difficulty,
+  type Flashcard,
+  type Deck,
+  type CreateDeckInput,
+  LANGUAGES,
+  DIFFICULTIES,
+} from "./types.js";
 
 /**
  * Schema for supported languages
@@ -29,3 +37,28 @@ export const FlashcardSchema: z.ZodType<Flashcard> = z.object({
  * Schema for an array of flashcards (a deck)
  */
 export const FlashcardDeckSchema: z.ZodType<Flashcard[]> = z.array(FlashcardSchema);
+
+/**
+ * Schema for a complete deck entity
+ */
+export const DeckSchema: z.ZodType<Deck> = z.object({
+  id: z.string().uuid(),
+  user_id: z.string(),
+  name: z.string(),
+  language: LanguageSchema,
+  difficulty: DifficultySchema,
+  cards: FlashcardDeckSchema,
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+/**
+ * Schema for creating a new deck
+ */
+export const CreateDeckInputSchema: z.ZodType<CreateDeckInput> = z.object({
+  user_id: z.string(),
+  name: z.string(),
+  language: LanguageSchema,
+  difficulty: DifficultySchema,
+  cards: FlashcardDeckSchema,
+});
