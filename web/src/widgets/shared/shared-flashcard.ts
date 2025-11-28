@@ -5,7 +5,7 @@
  * Core types (Language, Difficulty, Flashcard) are imported from @study-buddy/shared
  */
 
-import { type Language, type Difficulty } from "@study-buddy/shared";
+import type { Language, Difficulty } from "@study-buddy/shared";
 
 export const languageNames: Record<Language, string> = {
   spanish: "Spanish",

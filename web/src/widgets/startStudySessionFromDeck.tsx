@@ -1,5 +1,5 @@
 import "@/index.css";
-import { type Difficulty, type Flashcard, type Language } from "@study-buddy/shared";
+import type { Difficulty, Flashcard, Language } from "@study-buddy/shared";
 import { mountWidget, useToolOutput } from "skybridge/web";
 import { StudySessionUI } from "./shared/StudySessionUI";
 

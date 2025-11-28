@@ -1,4 +1,4 @@
-import { type CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { Language, Difficulty, Flashcard, Deck } from "@study-buddy/shared";
 import { getDecksForUser, getDeckById, createDeck } from "./db/decks.js";
 

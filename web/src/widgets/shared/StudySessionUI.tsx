@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { type Difficulty, type Flashcard, type Language } from "@study-buddy/shared";
+import type { Difficulty, Flashcard, Language } from "@study-buddy/shared";
 import { difficultyColorStyles, getThemeTokens, languageNames } from "./shared-flashcard";
 
 /*
