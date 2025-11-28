@@ -1,12 +1,17 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import type { Language, Difficulty, Flashcard, Deck } from "@study-buddy/shared";
-import { getDecksForUser, getDeckById, createDeck } from "./db/decks.js";
+import type { Language, Difficulty, Flashcard } from "@study-buddy/shared";
+import { getDecksForUser, getDeckById, createDeck, searchDecks } from "./db/decks.js";
 
 // Temporary hardcoded user ID until OAuth is implemented
 const TEMP_USER_ID = "temp-user-123";
 
-export type SelectDeckInput = {
+export type ListDecksInput = {
   userId?: string;
+};
+
+export type SearchDeckInput = {
+  language?: Language;
+  difficulty?: Difficulty;
 };
 
 export type SaveDeckInput = {
@@ -26,7 +31,7 @@ export type StartStudySessionFromScratchInput = {
   deck: Flashcard[];
 };
 
-export async function handleSelectDeck({ userId }: SelectDeckInput): Promise<CallToolResult> {
+export async function handleListDecks({ userId }: ListDecksInput): Promise<CallToolResult> {
   try {
     const effectiveUserId = userId ?? TEMP_USER_ID;
     const decks = await getDecksForUser(effectiveUserId);
@@ -50,6 +55,52 @@ export async function handleSelectDeck({ userId }: SelectDeckInput): Promise<Cal
   } catch (error) {
     return {
       content: [{ type: "text", text: `Error fetching decks: ${error}` }],
+      isError: true,
+    };
+  }
+}
+
+export async function handleSearchDeck({
+  language,
+  difficulty,
+}: SearchDeckInput): Promise<CallToolResult> {
+  try {
+    const decks = await searchDecks(TEMP_USER_ID, { language, difficulty });
+
+    if (decks.length === 0) {
+      return {
+        structuredContent: {
+          decks: [],
+          language,
+          difficulty,
+        },
+        content: [
+          {
+            type: "text",
+            text: `No decks found matching the criteria (language: ${language ?? "any"}, difficulty: ${difficulty ?? "any"}). Create a new deck using saveDeck with the desired language, difficulty, and generated flashcards.`,
+          },
+        ],
+        isError: false,
+      };
+    }
+
+    return {
+      structuredContent: {
+        decks,
+        language,
+        difficulty,
+      },
+      content: [
+        {
+          type: "text",
+          text: `Found ${decks.length} deck(s) matching the criteria (language: ${language ?? "any"}, difficulty: ${difficulty ?? "any"}). Choose the most appropriate deck based on the user's request, or create a new one if none are suitable.`,
+        },
+      ],
+      isError: false,
+    };
+  } catch (error) {
+    return {
+      content: [{ type: "text", text: `Error searching decks: ${error}` }],
       isError: true,
     };
   }

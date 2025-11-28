@@ -10,8 +10,8 @@ import {
 } from "./shared/shared-flashcard";
 
 /*
- * selectDeck widget
- * Displays user's saved decks and option to create new ones.
+ * listDecks widget
+ * Displays all user's saved decks and option to create new ones.
  */
 
 type WidgetProps = {
@@ -19,7 +19,7 @@ type WidgetProps = {
   decks: Deck[];
 };
 
-const SelectDeck = () => {
+const ListDecks = () => {
   const toolOutput = useToolOutput() as WidgetProps;
   const { sendFollowUpMessage } = useSendFollowUpMessage();
   const theme = window.openai?.theme || "light";
@@ -122,6 +122,6 @@ const SelectDeck = () => {
   );
 };
 
-export default SelectDeck;
+export default ListDecks;
 
-mountWidget(<SelectDeck />);
+mountWidget(<ListDecks />);

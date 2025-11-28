@@ -2,7 +2,8 @@ import { z } from "zod";
 import { McpServer } from "skybridge/server";
 import { LanguageSchema, DifficultySchema, LANGUAGES, DIFFICULTIES } from "@study-buddy/shared";
 import {
-  handleSelectDeck,
+  handleListDecks,
+  handleSearchDeck,
   handleSaveDeck,
   handleStartStudySessionFromDeck,
   handleStartStudySessionFromScratch,
@@ -16,26 +17,41 @@ const server = new McpServer(
   { capabilities: {} }
 );
 
-// Widget for selecting an existing deck or creating a new one
+// Widget for listing all user's decks
 server.widget(
-  "selectDeck",
+  "listDecks",
   {
-    description: "Display user's flashcard decks with option to create new ones",
+    description: "Display all user's flashcard decks with option to create new ones",
   },
   {
     description:
-      "Use this tool when the user wants to study flashcards. It displays all their saved decks and a button to create a new deck. When the user selects a deck, call startStudySessionFromDeck with that deck's ID. When the user clicks 'Create New Deck', generate flashcards based on user preferences and call saveDeck to save the deck.",
+      "Use this tool to display all the user's saved decks. When the user selects a deck, call startStudySessionFromDeck with that deck's ID. When the user clicks 'Create New Deck', generate flashcards based on user preferences and call saveDeck to save the deck.",
     inputSchema: {
       userId: z.string().optional().describe("User ID (optional, uses default if not provided)"),
     },
   },
-  handleSelectDeck
+  handleListDecks
 );
 
-// Tool for saving a deck to the database
+// Tool for searching decks by language and difficulty - ALWAYS use this first when starting a study session
+server.tool(
+  "searchDeck",
+  "IMPORTANT: Always call this tool FIRST when the user wants to study. Search for existing decks matching the requested language and/or difficulty. If matching decks are found, use startStudySessionFromDeck with the best match. Only if NO decks are found, then generate new flashcards and call saveDeck to create a new deck.",
+  {
+    language: LanguageSchema.optional().describe(
+      `Filter by language. Options: ${LANGUAGES.join(", ")}`
+    ),
+    difficulty: DifficultySchema.optional().describe(
+      `Filter by difficulty level. Options: ${DIFFICULTIES.join(", ")}`
+    ),
+  },
+  handleSearchDeck
+);
+
+// Tool for saving a deck to the database - only use after searchDeck returns no results
 server.tool(
   "saveDeck",
-  "Use this tool to save a flashcard deck to the database",
+  "Save a new flashcard deck to the database. IMPORTANT: Only use this tool AFTER calling searchDeck and finding no suitable existing decks. Do not create new decks if the user already has matching decks.",
   {
     name: z.string().describe("Name for the deck (e.g., 'French Beginner - Food & Drinks')"),
     language: LanguageSchema.describe(`Language of the deck. Options: ${LANGUAGES.join(", ")}`),
@@ -52,15 +68,15 @@ server.tool(
   handleSaveDeck
 );
 
-// Widget for starting a study session from a saved deck
+// Widget for starting a study session from a saved deck - preferred method
 server.widget(
   "startStudySessionFromDeck",
   {
-    description: "Start a language flashcard study session from a saved deck",
+    description: "Start a language flashcard study session from a saved deck (preferred)",
   },
   {
     description:
-      "Use this tool to start a study session by loading a saved deck from the database. Requires the deck ID.",
+      "Use this tool to start a study session by loading a saved deck from the database. This is the PREFERRED way to start a study session. Always try to use an existing deck from searchDeck results before creating a new one.",
     inputSchema: {
       deckId: z.string().uuid().describe("ID of a saved deck to load from the database"),
     },
@@ -68,15 +84,15 @@ server.widget(
   handleStartStudySessionFromDeck
 );
 
-// Widget for starting a study session with deck data provided directly
+// Widget for starting a study session with deck data provided directly - use only for temporary sessions
 server.widget(
   "startStudySessionFromScratch",
   {
-    description: "Start a language flashcard study session with provided deck data",
+    description: "Start a language flashcard study session with provided deck data (fallback)",
   },
   {
     description:
-      "Use this tool to start a study session with flashcard data provided directly. Use this after generating flashcards and saving the deck.",
+      "Use this tool only for temporary study sessions where the deck should NOT be saved. For persistent decks, use searchDeck first, then either startStudySessionFromDeck (if deck exists) or saveDeck followed by startStudySessionFromDeck (if new deck needed).",
     inputSchema: {
       studyLanguage: LanguageSchema.describe(
         `Language for the study session. Options: ${LANGUAGES.join(", ")}`

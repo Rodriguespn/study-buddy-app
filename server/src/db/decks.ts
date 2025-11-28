@@ -1,5 +1,10 @@
-import type { Deck, CreateDeckInput } from "@study-buddy/shared";
+import type { Deck, CreateDeckInput, Language, Difficulty } from "@study-buddy/shared";
 import { supabase } from "../supabase.js";
+
+export type SearchDecksFilters = {
+  language?: Language;
+  difficulty?: Difficulty;
+};
 
 /**
  * Get all decks for a user
@@ -75,4 +80,27 @@ export async function deleteDeck(deckId: string, userId: string): Promise<boolea
   }
 
   return true;
+}
+
+/**
+ * Search decks by language and/or difficulty
+ */
+export async function searchDecks(userId: string, filters: SearchDecksFilters): Promise<Deck[]> {
+  let query = supabase.from("decks").select("*").eq("user_id", userId);
+
+  if (filters.language) {
+    query = query.eq("language", filters.language);
+  }
+
+  if (filters.difficulty) {
+    query = query.eq("difficulty", filters.difficulty);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to search decks: ${error.message}`);
+  }
+
+  return data as Deck[];
 }

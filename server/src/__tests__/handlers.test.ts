@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   handleStartStudySessionFromDeck,
   handleStartStudySessionFromScratch,
-  handleSelectDeck,
+  handleListDecks,
+  handleSearchDeck,
   handleSaveDeck,
 } from "../handlers.js";
 
@@ -11,23 +12,25 @@ vi.mock("../db/decks.js", () => ({
   getDecksForUser: vi.fn(),
   getDeckById: vi.fn(),
   createDeck: vi.fn(),
+  searchDecks: vi.fn(),
 }));
 
-import { getDecksForUser, getDeckById, createDeck } from "../db/decks.js";
+import { getDecksForUser, getDeckById, createDeck, searchDecks } from "../db/decks.js";
 
 const mockGetDecksForUser = vi.mocked(getDecksForUser);
 const mockGetDeckById = vi.mocked(getDeckById);
 const mockCreateDeck = vi.mocked(createDeck);
+const mockSearchDecks = vi.mocked(searchDecks);
 
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("selectDeck handler", () => {
+describe("listDecks handler", () => {
   it("returns empty decks array when user has no decks", async () => {
     mockGetDecksForUser.mockResolvedValue([]);
 
-    const result = await handleSelectDeck({});
+    const result = await handleListDecks({});
 
     expect(result.isError).toBe(false);
     expect(result.structuredContent).toHaveProperty("decks", []);
@@ -49,7 +52,41 @@ describe("selectDeck handler", () => {
     ];
     mockGetDecksForUser.mockResolvedValue(mockDecks);
 
-    const result = await handleSelectDeck({});
+    const result = await handleListDecks({});
+
+    expect(result.isError).toBe(false);
+    expect(result.structuredContent).toHaveProperty("decks", mockDecks);
+    expect(result.content?.[0]).toHaveProperty("text", expect.stringContaining("Found 1 deck(s)"));
+  });
+});
+
+describe("searchDeck handler", () => {
+  it("returns empty array when no decks match criteria", async () => {
+    mockSearchDecks.mockResolvedValue([]);
+
+    const result = await handleSearchDeck({ language: "french", difficulty: "beginner" });
+
+    expect(result.isError).toBe(false);
+    expect(result.structuredContent).toHaveProperty("decks", []);
+    expect(result.content?.[0]).toHaveProperty("text", expect.stringContaining("No decks found"));
+  });
+
+  it("returns matching decks when they exist", async () => {
+    const mockDecks = [
+      {
+        id: "deck-1",
+        user_id: "temp-user-123",
+        name: "French Basics",
+        language: "french" as const,
+        difficulty: "beginner" as const,
+        cards: [{ word: "bonjour", translation: "hello" }],
+        created_at: "2024-01-01T00:00:00Z",
+        updated_at: "2024-01-01T00:00:00Z",
+      },
+    ];
+    mockSearchDecks.mockResolvedValue(mockDecks);
+
+    const result = await handleSearchDeck({ language: "french" });
 
     expect(result.isError).toBe(false);
     expect(result.structuredContent).toHaveProperty("decks", mockDecks);
