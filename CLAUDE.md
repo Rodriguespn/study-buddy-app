@@ -49,6 +49,18 @@ The primary audience includes developers building ChatGPT integrations and langu
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                 # GitHub Actions CI pipeline
+├── supabase/                      # Supabase Edge Functions
+│   ├── config.toml                # Supabase configuration
+│   └── functions/
+│       └── study-buddy/           # MCP server edge function
+│           ├── index.ts           # Hono entry point
+│           ├── deno.json          # Deno imports
+│           └── src/               # Adapted server code for Deno
+│               ├── _compat/       # Skybridge Deno adapter
+│               ├── db/            # Database operations
+│               └── shared/        # Copied from shared package (generated)
+├── scripts/                       # Build and deployment scripts
+│   └── prepare-edge-function.js   # Prepares edge function for deployment
 ├── .claude/                       # Claude AI settings
 ├── package.json                   # Root workspace configuration
 ├── pnpm-workspace.yaml            # pnpm workspace definition
@@ -200,6 +212,29 @@ pnpm biome check --write .
 pnpm tsc --noEmit
 ```
 
+### Supabase Edge Functions (Alternative Deployment)
+
+The MCP server can also be deployed to Supabase Edge Functions as an alternative to Node.js hosting.
+
+```bash
+# Prepare edge function (builds packages, copies files)
+pnpm edge:prepare
+
+# Local development with Supabase CLI
+pnpm edge:dev
+
+# Deploy to Supabase
+pnpm edge:deploy
+```
+
+**Note**: The Edge Functions deployment uses a Deno-compatible Skybridge adapter since Skybridge has Node.js-specific dependencies (`node:fs`, `node:path`, `process`). The adapter provides the same `widget()` API as Skybridge.
+
+**Environment Setup for Edge Functions**:
+```bash
+# Set required secrets (SUPABASE_URL and SUPABASE_ANON_KEY are auto-injected)
+supabase secrets set MCP_SERVER_URL=https://<project-ref>.supabase.co/functions/v1/study-buddy
+```
+
 ### Environment Variables
 Server requires the following environment variables:
 - `SUPABASE_URL`: Supabase project URL (e.g., `https://xxx.supabase.co`)
@@ -217,13 +252,15 @@ Server requires the following environment variables:
 - **Skybridge**: Alpic.ai's MCP widget framework
 
 ### Backend
-- **Express 5.1.0**: HTTP server
+- **Express 5.1.0**: HTTP server (Node.js deployment)
+- **Hono**: HTTP framework (Supabase Edge Functions deployment)
 - **TypeScript 5.7.2**: Type safety
 - **MCP SDK**: Model Context Protocol
 - **Supabase**: PostgreSQL database + OAuth 2.1 Auth
+- **Supabase Edge Functions**: Alternative Deno-based deployment
 - **jose**: JWT/JWKS validation
 - **Zod**: Schema validation
-- **T3 Env**: Typed environment variables
+- **T3 Env**: Typed environment variables (Node.js only)
 
 ### Development
 - **Biome**: Formatter and linter
@@ -268,8 +305,10 @@ Server requires the following environment variables:
 - **Skybridge Framework**: Alpic.ai's framework that abstracts MCP complexity for widget development
 - **Zod-First Validation**: Runtime type safety across server boundaries
 - **Widget Pattern**: Self-contained components over traditional SPA routing
-- **AsyncLocalStorage for Auth**: Request-scoped auth context without polluting Express types
+- **AsyncLocalStorage for Auth**: Request-scoped auth context without polluting Express types (Node.js only)
+- **Context Injection for Deno**: Edge Functions use factory pattern with context passing instead of AsyncLocalStorage
 - **Supabase as OAuth Provider**: Leverages Supabase Auth's OAuth 2.1 server capabilities with DCR for MCP clients
+- **Dual Deployment**: MCP server works on both Node.js (Express) and Deno (Hono) environments
 
 ## Testing OAuth Flow
 

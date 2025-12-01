@@ -51,12 +51,12 @@ app.get("/oauth/config.json", (_req, res) => {
 });
 
 // Serve OAuth consent UI
-app.get("/oauth/consent", (_req, res) => {
-  res.sendFile(path.join(__dirname, "../public/oauth/consent.html"));
+app.get("/assets/oauth/consent", (_req, res) => {
+  res.sendFile(path.join(__dirname, "../assets/oauth/consent.html"));
 });
 
 // Serve static files for OAuth (e.g., config.json if moved here later)
-app.use("/oauth", express.static(path.join(__dirname, "../public/oauth")));
+app.use("/assets/oauth", express.static(path.join(__dirname, "../assets/oauth")));
 
 app.use(mcp(server));
 
