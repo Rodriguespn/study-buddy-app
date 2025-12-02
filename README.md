@@ -10,7 +10,7 @@ Built with [Supabase](https://supabase.com) and hosted on [Alpic.ai](https://alp
 
 ![App Usage GIF](./assets/demo.gif)
 
-Try the app live: [study-buddy-aedacb7d.alpic.live/](https://study-buddy-aedacb7d.alpic.live/)
+Try the app live: [study-buddy.alpic.live](https://study-buddy.alpic.live/)
 
 ## Features
 
